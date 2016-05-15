@@ -13,7 +13,7 @@ class Game:
     def __init__(self):
         pygame.init()
         self.room = pygame.Surface(self.room_size)
-        self.game_display = pygame.display.set_mode(self.window_size)
+        self.game_display = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
         pygame.display.set_caption(self.window_caption)
         self.game_clock = pygame.time.Clock()
         self.player = Cell()
@@ -78,9 +78,9 @@ class Game:
                                 self.masses.pop(self.masses.index(other_game_obj))
                             elif self.cells.count(other_game_obj) > 0:
                                 self.cells.pop(self.cells.index(other_game_obj))
-                                
 
             self.blit_room_to_display()
+            pygame.display.update()
 
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
@@ -88,11 +88,24 @@ class Game:
                         pass
                     if event.key == pygame.K_w:
                         pass
+                    if self.cells.count(self.player) == 0:
+                        if event.key == pygame.K_UP:
+                            self.player.y -= 100
+                        if event.key == pygame.K_DOWN:
+                            self.player.y += 100
+                        if event.key == pygame.K_RIGHT:
+                            self.player.x += 100
+                        if event.key == pygame.K_LEFT:
+                            self.player.x -= 100
+                
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
+                if event.type == pygame.VIDEORESIZE:
+                    self.window_size = (event.w, event.h)
+                    self.game_display = pygame.display.set_mode(self.window_size, pygame.RESIZABLE)
+                    pygame.display.set_caption(self.window_caption)
 
-            pygame.display.update()
             self.game_clock.tick(30)                      
 
 
@@ -130,7 +143,7 @@ class Cell(Mass):
         return max(1, math.sqrt(math.pow(self.rise_to_point(point[1]), 2) + math.pow(self.run_to_point(point[0]), 2)))
 
     def speed(self):
-        return self.speed_factor/self.radius
+        return min(8 ,self.speed_factor/math.sqrt(self.radius))
         
     def frac_travel(self):
         return self.speed() / self.distance_to_point((self.target_x, self.target_y))
